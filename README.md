@@ -1,0 +1,116 @@
+# GHOSTED Bot
+
+Discord bot for provisioning GHOSTED cohorts from Google Sheets.
+
+---
+
+## What it creates
+
+For `/create_cohort cohort_number:2 sheet_url:https://...`:
+
+**Category:** `GHOSTED Cohort-2`
+
+**Channels:**
+- `ghosted-announcements` — cohort members can read, organizers can send
+- `ghosted-general` — everyone in the cohort can chat
+- `ghosted-team-<name>` — one per team, private to that team
+
+**Roles (3 per person):**
+- `Ghosted-general` — permanent, given to everyone ever in the program
+- `Ghosted-cohort-2` — cohort-specific
+- `Ghosted-<teamname>` — team-specific
+
+---
+
+## Sheet format
+
+Row 1 must be headers. Required columns (names are flexible, just must contain the keyword):
+
+| Team | Name | Discord ID |
+|---|---|---|
+| Sankalp | Rahul | 123456789012345678 |
+| Canopy Commons | Neha | 987654321098765432 |
+
+- **Discord ID** = 18-digit user ID (not username). Enable Developer Mode → right-click user → Copy User ID.
+- Sheet must be shared as **"Anyone with the link → Viewer"**.
+
+---
+
+## Setup
+
+### 1. Install
+```bash
+npm install
+cp .env.example .env
+```
+
+### 2. Fill .env
+```
+DISCORD_TOKEN=      # Bot token from Discord Developer Portal
+CLIENT_ID=          # Application ID
+GUILD_ID=           # Your server ID (right-click server → Copy ID)
+```
+
+### 3. Bot permissions
+When inviting the bot, it needs:
+- Manage Roles
+- Manage Channels
+- View Channels
+- Send Messages
+
+Scopes: `bot` + `applications.commands`
+
+**Important:** The bot's role must be placed ABOVE the roles it creates in Server Settings → Roles.
+
+### 4. Deploy slash commands (once)
+```bash
+node src/deploy-commands.js
+```
+
+---
+
+## Running
+
+### Option A — Slash command in Discord
+```bash
+npm start
+```
+Then use `/create_cohort`, `/archive_cohort`, `/add_member`, `/list_cohorts` in your server.
+
+### Option B — GUI in browser (recommended for provisioning)
+```bash
+npm run gui
+# open http://localhost:3000
+```
+Enter cohort number + sheet URL → Preview → Provision.
+
+---
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `/create_cohort cohort_number sheet_url` | Full provisioning from sheet |
+| `/archive_cohort cohort_number` | Lock cohort read-only, rename to archived |
+| `/add_member cohort_number team user` | Add a late participant |
+| `/list_cohorts` | Show all active cohorts |
+
+---
+
+## File structure
+```
+ghosted-bot/
+├── src/
+│   ├── index.js           # Bot entry point
+│   ├── server.js          # GUI Express server
+│   ├── commands.js        # Slash command definitions
+│   ├── handlers.js        # Slash command logic
+│   ├── provision.js       # Core provisioning (shared by bot + GUI)
+│   ├── sheets.js          # Google Sheets CSV parser
+│   └── deploy-commands.js # One-time command registration
+├── public/
+│   └── index.html         # Browser GUI
+├── .env.example
+├── package.json
+└── README.md
+```
