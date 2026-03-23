@@ -5,22 +5,16 @@ Discord bot for provisioning GHOSTED cohorts from Google Sheets.
 ---
 
 ## What it creates
+## Features
 
-For `/create_cohort cohort_number:2 sheet_url:https://...`:
-
-**Category:** `GHOSTED Cohort-2`
-
-**Channels:**
-- `ghosted-announcements` — cohort members can read, organizers can send
-- `ghosted-general` — everyone in the cohort can chat
-- `ghosted-team-<name>` — one per team, private to that team
-
-**Roles (3 per person):**
-- `Ghosted-general` — permanent, given to everyone ever in the program
-- `Ghosted-cohort-2` — cohort-specific
-- `Ghosted-<teamname>` — team-specific
-
----
+- **🚀 Automated Provisioning**: Creates necessary roles (e.g., `Ghosted-cohort-2`, `Ghosted-team-voice-of-needy`) and private team channels based on a Google Sheet.
+- **🔄 Sync**: Add new late-joiners without recreating existing channels.
+- **🧹 Bulk Operations**: Remove all GHOSTED roles from an entire cohort at once, or transfer members between teams.
+- **📡 Communication**: Broadcast announcements to a cohort or send DMs to an entire team at once.
+- **🤖 Automation**: Automatically assigns roles when participants join the Server and detects/logs when they leave.
+- **📦 Archiving**: Safely lock and archive a cohort when it ends (on-demand or via automated schedule).
+- **🔒 Secure Dashboard**: Password-protected, SQLite-session-backed web interface to manage operations without using Discord commands.
+- **📊 Observability**: Built-in cohort stats, CSV exports, persistent Activity Logs, and Discord webhook notifications.
 
 ## Sheet format
 
@@ -46,10 +40,26 @@ cp .env.example .env
 
 ### 2. Fill .env
 ```
-DISCORD_TOKEN=      # Bot token from Discord Developer Portal
-CLIENT_ID=          # Application ID
-GUILD_ID=           # Your server ID (right-click server → Copy ID)
+DISCORD_TOKEN="your_bot_token"
+CLIENT_ID="your_client_id"
+GUILD_ID="your_server_id"
+
+# Web Dashboard
+GUI_PORT=3000
+
+# Auth & Security (Required)
+DASHBOARD_PASSWORD="changeme_to_secure_password"
+SESSION_SECRET="generate_random_long_string"
+
+# Optional enhancements
+BOT_LOG_CHANNEL_ID="channel_id_for_webhooks_and_leave_alerts"
+WELCOME_MESSAGE="Welcome to GHOSTED! Please check your private team channel."
+
+# Active cohort category (Optional: defaults to none)
+ACTIVE_CATEGORY_ID="optional_parent_category_id_for_active_cohorts"
 ```
+
+The database (`ghosted.db`) will be automatically created in the root directory upon first run. It will use `DASHBOARD_PASSWORD` to create the initial `admin` user.
 
 ### 3. Bot permissions
 When inviting the bot, it needs:
