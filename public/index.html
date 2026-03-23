@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHOSTED Bot</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1e1f22;--s1:#2b2d31;--s2:#313338;--border:#3f4147;
+  --blurple:#5865f2;--blurple2:#4752c4;--green:#57f287;--yellow:#fee75c;
+  --red:#ed4245;--teal:#1a9b9b;--teal2:#127a7a;--text:#dbdee1;--muted:#949ba4;--r:8px;
+}
+body{font-family:"gg sans","Noto Sans","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:28px 20px}
+.app{max-width:860px;margin:0 auto}
+
+/* header */
+.header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.logo{width:44px;height:44px;border-radius:50%;background:var(--blurple);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.header h1{font-size:20px;font-weight:700}
+.header p{font-size:13px;color:var(--muted);margin-top:2px}
+.pill{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s;flex-shrink:0}
+.dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+
+/* tabs */
+.tabs{display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;color:var(--muted);background:transparent;border:none;transition:all .15s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--text);background:var(--s1)}
+.tab.active{color:var(--blurple);border-bottom-color:var(--blurple);background:var(--s1)}
+.panel{display:none}.panel.active{display:block}
+
+/* card */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:14px}
+.label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+
+/* form */
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.grow{flex:1;min-width:180px}
+.field span{font-size:12px;color:var(--muted)}
+input[type=text],input[type=number]{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;transition:border-color .15s;width:100%}
+input[type=number]{width:110px}
+input:focus{border-color:var(--blurple)}
+input::placeholder{color:var(--muted)}
+.btn{background:var(--blurple);color:#fff;border:none;border-radius:4px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap;height:42px}
+.btn:hover:not(:disabled){background:var(--blurple2)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.green{background:#2d7d46}.btn.green:hover:not(:disabled){background:#236337}
+.btn.teal{background:var(--teal)}.btn.teal:hover:not(:disabled){background:var(--teal2)}
+.btn.red{background:#7d2d2d}.btn.red:hover:not(:disabled){background:#632323}
+.btn.yellow{background:#7d6a00}.btn.yellow:hover:not(:disabled){background:#5c4e00}
+
+/* feedback */
+.fb{display:none;font-size:13px;margin-top:10px;padding:8px 12px;border-radius:4px}
+.fb.loading{display:block;color:var(--muted);background:var(--s2)}
+.fb.error{display:block;color:var(--red);background:#3a1a1b;border:1px solid #6b2426}
+.fb.success{display:block;color:var(--green);background:#1a3a26;border:1px solid #2d6b46}
+
+/* stats */
+.stats{display:none;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stats.on{display:flex}
+.stat{flex:1;min-width:120px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;text-align:center}
+.stat-n{font-size:28px;font-weight:800;color:var(--blurple)}
+.stat-l{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+
+/* warnings */
+.warnbox{display:none;background:#2d2a1a;border:1px solid #6b5c00;border-radius:var(--r);padding:12px 16px;margin-bottom:14px}
+.warnbox.on{display:block}
+.warnbox .wt{font-size:11px;font-weight:700;color:var(--yellow);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.warnbox ul{list-style:none}
+.warnbox li{font-size:13px;color:#e8d98a;padding:2px 0}
+.warnbox li::before{content:"⚠  "}
+
+/* team preview */
+.preview-wrap{margin-bottom:14px}
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.team-card{background:var(--s1);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.th{display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--s2);border-bottom:1px solid var(--border)}
+.tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tname{font-size:13px;font-weight:700}
+.tcount{font-size:11px;color:var(--muted);margin-left:auto}
+.mlist{list-style:none;padding:6px 0}
+.mi{display:flex;align-items:center;gap:8px;padding:4px 13px;font-size:13px}
+.av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;text-transform:uppercase}
+.mid{font-size:10px;color:var(--muted);font-family:monospace;margin-left:auto}
+.mid.none{color:var(--red)}
+
+/* roles */
+.roles{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:600}
+.chip.blue{background:#3a3f9e;color:#b8beff}
+.chip.green{background:#1a4a2e;color:#57f287}
+.chip.yellow{background:#3a3200;color:#fee75c}
+
+/* provision bar */
+.provbar{display:none;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px 22px;margin-bottom:14px}
+.provbar.on{display:flex}
+.provinfo{flex:1}
+.provinfo strong{font-size:15px}
+.provinfo p{font-size:13px;color:var(--muted);margin-top:3px}
+
+/* cohort list table */
+.cohort-table{width:100%;border-collapse:collapse;font-size:13px}
+.cohort-table th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border)}
+.cohort-table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.cohort-table tr:last-child td{border-bottom:none}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.badge.live{background:#1a4a2e;color:var(--green)}
+.badge.archived{background:#2a2a2a;color:var(--muted)}
+
+/* audit */
+.audit-list{list-style:none}
+.audit-list li{font-size:13px;padding:4px 0}
+.audit-ok{color:var(--green)}
+.audit-issue{color:var(--red)}
+
+/* log */
+.logwrap{display:none;background:#111214;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:14px}
+.logwrap.on{display:block}
+.loghdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.logbody{padding:12px 16px;max-height:320px;overflow-y:auto;font-family:monospace;font-size:13px;line-height:1.75}
+.ll.section{color:var(--blurple);font-weight:700;margin-top:8px}
+.ll.step{color:#9ba8c9}
+.ll.ok{color:var(--green)}
+.ll.fail{color:var(--red)}
+.ll.warn{color:var(--yellow)}
+.ll.skip{color:var(--yellow)}
+.ll.done{color:var(--green);font-weight:700;margin-top:4px}
+.ll.error{color:var(--red);font-weight:700}
+
+/* empty */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.ei{font-size:38px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- header -->
+  <div class="header">
+    <div class="logo">👻</div>
+    <div><h1>GHOSTED Bot</h1><p>Cohort management dashboard</p></div>
+    <div class="pill">
+      <div class="dot" id="dot"></div>
+      <span id="dtag">Connecting…</span>
+    </div>
+  </div>
+
+  <!-- tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('provision')" id="tab-provision">🚀 Provision</button>
+    <button class="tab" onclick="setTab('members')" id="tab-members">👤 Members</button>
+    <button class="tab" onclick="setTab('manage')" id="tab-manage">⚙ Manage</button>
+  </div>
+
+  <!-- ═══ TAB: PROVISION ═══════════════════════════════════════════════ -->
+  <div class="panel active" id="panel-provision">
+
+    <div class="card">
+      <div class="label">Cohort Details</div>
+      <div class="row">
+        <div class="field">
+          <span>Cohort number</span>
+          <input type="number" id="cohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <div class="field grow">
+          <span>Google Sheet URL</span>
+          <input type="text" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/…">
+        </div>
+        <button class="btn" id="previewBtn" onclick="doPreview()">Preview</button>
+      </div>
+      <div class="fb" id="fb"></div>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat"><div class="stat-n" id="sTeams">0</div><div class="stat-l">Teams</div></div>
+      <div class="stat"><div class="stat-n" id="sMembers">0</div><div class="stat-l">Members</div></div>
+      <div class="stat"><div class="stat-n" id="sCohort" style="color:var(--green)">—</div><div class="stat-l">Cohort</div></div>
+      <div class="stat"><div class="stat-n" id="sMissing" style="color:var(--red)">0</div><div class="stat-l">Missing IDs</div></div>
+    </div>
+
+    <div id="rolesPreview"></div>
+
+    <div class="warnbox" id="warnbox">
+      <div class="wt">Warnings — fix in sheet before provisioning</div>
+      <ul id="warnlist"></ul>
+    </div>
+
+    <div class="preview-wrap">
+      <div class="teams-grid" id="teamsGrid">
+        <div class="empty"><div class="ei">👻</div><p>Enter cohort number + sheet URL above</p></div>
+      </div>
+    </div>
+
+    <div class="provbar" id="provbar">
+      <div class="provinfo">
+        <strong id="provSummary"></strong>
+        <p>Review above then provision or sync.</p>
+      </div>
+      <button class="btn teal" id="syncBtn" onclick="doSync()" disabled title="Cohort not provisioned yet">🔄 Sync</button>
+      <button class="btn green" id="provBtn" onclick="doProvision()">⚡ Provision</button>
+    </div>
+
+    <div class="logwrap" id="logwrap-provision">
+      <div class="loghdr"><span>Live Log</span><span id="logStatus-provision" style="color:var(--yellow)">Running…</span></div>
+      <div class="logbody" id="logbody-provision"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: MEMBERS ═════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-members">
+
+    <!-- Add Member -->
+    <div class="card">
+      <div class="label">Add Member</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Add a latejoiner to an existing provisioned cohort.</p>
+      <div class="row">
+        <div class="field">
+          <span>Cohort number</span>
+          <input type="number" id="addCohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <div class="field grow">
+          <span>Team slug (e.g. <code style="color:var(--blurple)">voice-of-needy</code>)</span>
+          <input type="text" id="addTeamSlug" placeholder="voice-of-needy">
+        </div>
+        <div class="field grow">
+          <span>Discord ID</span>
+          <input type="text" id="addDiscordId" placeholder="123456789012345678">
+        </div>
+        <button class="btn green" onclick="doAddMember()">➕ Add</button>
+      </div>
+    </div>
+
+    <!-- Remove Member -->
+    <div class="card">
+      <div class="label">Remove Member</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Strip all GHOSTED roles from a member (dropout / ban).</p>
+      <div class="row">
+        <div class="field">
+          <span>Cohort number</span>
+          <input type="number" id="rmCohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <div class="field grow">
+          <span>Discord ID</span>
+          <input type="text" id="rmDiscordId" placeholder="123456789012345678">
+        </div>
+        <button class="btn red" onclick="doRemoveMember()">🗑 Remove</button>
+      </div>
+    </div>
+
+    <div class="logwrap" id="logwrap-members">
+      <div class="loghdr"><span>Live Log</span><span id="logStatus-members" style="color:var(--yellow)">Running…</span></div>
+      <div class="logbody" id="logbody-members"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: MANAGE ═══════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-manage">
+
+    <!-- Cohort List -->
+    <div class="card">
+      <div class="label" style="display:flex;align-items:center;justify-content:space-between">
+        <span>All Cohorts</span>
+        <button class="btn" style="height:32px;font-size:12px;padding:0 14px" onclick="loadCohorts()">↻ Refresh</button>
+      </div>
+      <div id="cohortListWrap">
+        <div class="empty" style="padding:20px"><p>Click Refresh to load cohorts</p></div>
+      </div>
+    </div>
+
+    <!-- Archive -->
+    <div class="card">
+      <div class="label">Archive Cohort</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Rename category to archived and lock all channels read-only.</p>
+      <div class="row">
+        <div class="field">
+          <span>Cohort number</span>
+          <input type="number" id="archiveCohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <button class="btn yellow" onclick="doArchive()">📦 Archive</button>
+      </div>
+    </div>
+
+    <!-- Audit -->
+    <div class="card">
+      <div class="label">Audit Cohort</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Verify all channels and roles for a cohort are intact.</p>
+      <div class="row">
+        <div class="field">
+          <span>Cohort number</span>
+          <input type="number" id="auditCohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <button class="btn" onclick="doAudit()">🔍 Audit</button>
+      </div>
+      <div id="auditResult" style="margin-top:14px"></div>
+    </div>
+
+    <div class="logwrap" id="logwrap-manage">
+      <div class="loghdr"><span>Live Log</span><span id="logStatus-manage" style="color:var(--yellow)">Running…</span></div>
+      <div class="logbody" id="logbody-manage"></div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+const COLS=['#5865f2','#57f287','#fee75c','#eb459e','#ed4245','#faa61a','#00aff4','#ff73fa','#1abc9c','#3ba55c'];
+const ini=n=>n.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+const col=i=>COLS[i%COLS.length];
+
+let previewData=null;
+let previewDebounce=null;
+
+// ── Tab navigation ────────────────────────────────────────────────────────────
+function setTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ── Discord status ────────────────────────────────────────────────────────────
+async function pollStatus(){
+  try{
+    const r=await fetch('/api/status').then(r=>r.json());
+    const dot=document.getElementById('dot'),tag=document.getElementById('dtag');
+    if(r.ready){dot.className='dot on';tag.textContent=r.tag;}
+    else{dot.className='dot';tag.textContent='Connecting…';setTimeout(pollStatus,2000);}
+  }catch{setTimeout(pollStatus,3000);}
+}
+pollStatus();
+
+// ── SSE stream reader ─────────────────────────────────────────────────────────
+async function readSSE(url, body, logId, statusId){
+  const logbody=document.getElementById('logbody-'+logId);
+  const logStatus=document.getElementById('logStatus-'+statusId||logId);
+  document.getElementById('logwrap-'+logId).classList.add('on');
+  logbody.innerHTML='';
+  logStatus.textContent='Running…'; logStatus.style.color='var(--yellow)';
+
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const reader=res.body.getReader(),dec=new TextDecoder();
+  let buf='';
+  while(true){
+    const {done,value}=await reader.read();
+    if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    const lines=buf.split('\n'); buf=lines.pop();
+    for(const line of lines){
+      if(!line.startsWith('data: ')) continue;
+      const evt=JSON.parse(line.slice(6));
+      if(evt.type==='log') addLine(logId,evt.level,evt.text);
+      else if(evt.type==='error'){addLine(logId,'error','✗ '+(evt.message||'Unknown error'));logStatus.textContent='Error';logStatus.style.color='var(--red)';}
+      else if(evt.type==='all_done'){logStatus.textContent='✅ Done';logStatus.style.color='var(--green)';}
+    }
+  }
+}
+
+function addLine(logId,cls,text){
+  const b=document.getElementById('logbody-'+logId);
+  const d=document.createElement('div');
+  d.className='ll '+cls; d.textContent=text;
+  b.appendChild(d); b.scrollTop=b.scrollHeight;
+}
+
+// ── Shared feedback ───────────────────────────────────────────────────────────
+function fb(type,msg){const e=document.getElementById('fb');e.className='fb '+type;e.textContent=msg;}
+function clearfb(){document.getElementById('fb').className='fb';}
+
+// ── Preview (debounced 300ms on Enter) ────────────────────────────────────────
+async function doPreview(){
+  const url=document.getElementById('sheetUrl').value.trim();
+  const num=document.getElementById('cohortNum').value.trim();
+  if(!url||!num){fb('error','Enter both a cohort number and a sheet URL.');return;}
+  document.getElementById('previewBtn').disabled=true;
+  fb('loading','⏳ Fetching sheet…');
+  ['stats','warnbox','provbar'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('teamsGrid').innerHTML='';
+  document.getElementById('rolesPreview').innerHTML='';
+  document.getElementById('logwrap-provision').classList.remove('on');
+  previewData=null;
+  try{
+    const res=await fetch('/api/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sheetUrl:url,cohortNumber:Number(num)})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error);
+    previewData={...data,cohortNumber:Number(num),sheetUrl:url};
+    clearfb();
+    if(data.cohortExists) data.warnings=[`⛔ Cohort ${num} already exists — use 🔄 Sync to add new members, or delete the category first.`,...(data.warnings||[])];
+    render(data,Number(num),data.cohortExists);
+  }catch(err){
+    fb('error','✗ '+err.message);
+    document.getElementById('teamsGrid').innerHTML=`<div class="empty"><div class="ei">❌</div><p>${err.message}</p></div>`;
+  }finally{document.getElementById('previewBtn').disabled=false;}
+}
+
+function render({teams,warnings,memberCount,teamCount},cohortNum,cohortExists=false){
+  const teamNames=Object.keys(teams);
+  let missing=0;
+  teamNames.forEach(t=>teams[t].forEach(m=>{if(!m.discordId)missing++;}));
+
+  document.getElementById('sTeams').textContent=teamCount;
+  document.getElementById('sMembers').textContent=memberCount;
+  document.getElementById('sCohort').textContent=cohortNum;
+  document.getElementById('sMissing').textContent=missing;
+  document.getElementById('stats').classList.add('on');
+
+  document.getElementById('rolesPreview').innerHTML=`
+    <div class="card" style="margin-bottom:14px">
+      <div class="label">Roles that will be assigned</div>
+      <div class="roles">
+        <span class="chip blue">Ghosted-general</span>
+        <span class="chip green">Ghosted-cohort-${cohortNum}</span>
+        ${teamNames.map(t=>`<span class="chip yellow">Ghosted-${t}</span>`).join('')}
+      </div>
+    </div>`;
+
+  if(warnings&&warnings.length){
+    document.getElementById('warnlist').innerHTML=warnings.map(w=>`<li>${w}</li>`).join('');
+    document.getElementById('warnbox').classList.add('on');
+  }
+
+  const grid=document.getElementById('teamsGrid');
+  grid.innerHTML='';
+  teamNames.forEach((t,i)=>{
+    const members=teams[t],c=col(i);
+    const card=document.createElement('div');
+    card.className='team-card';
+    card.innerHTML=`
+      <div class="th">
+        <div class="tdot" style="background:${c}"></div>
+        <div class="tname">ghosted-team-${t}</div>
+        <div class="tcount">${members.length}</div>
+      </div>
+      <ul class="mlist">
+        ${members.map(m=>`
+          <li class="mi">
+            <div class="av" style="background:${c}">${ini(m.name)}</div>
+            <span>${m.name}</span>
+            <span class="mid ${m.discordId?'':'none'}">${m.discordId?'···'+m.discordId.slice(-4):'⚠ no ID'}</span>
+          </li>`).join('')}
+      </ul>`;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('provSummary').textContent=`GHOSTED Cohort-${cohortNum} · ${teamCount} teams · ${memberCount} members`;
+  document.getElementById('provbar').classList.add('on');
+  document.getElementById('provBtn').disabled=!!cohortExists;
+  document.getElementById('syncBtn').disabled=!cohortExists;
+  document.getElementById('provBtn').title=cohortExists?'Cohort exists — use Sync or delete category first.':'';
+  document.getElementById('syncBtn').title=cohortExists?'Assign roles to new members only.':'Run Provision first.';
+}
+
+// ── Provision ─────────────────────────────────────────────────────────────────
+async function doProvision(){
+  if(!previewData) return;
+  const btn=document.getElementById('provBtn');
+  const syncBtn=document.getElementById('syncBtn');
+  btn.disabled=true; syncBtn.disabled=true;
+  try{ await readSSE('/api/provision',{cohortNumber:previewData.cohortNumber,sheetUrl:previewData.sheetUrl},'provision','provision'); }
+  finally{ btn.disabled=false; syncBtn.disabled=false; }
+}
+
+// ── Sync ──────────────────────────────────────────────────────────────────────
+async function doSync(){
+  if(!previewData) return;
+  const btn=document.getElementById('syncBtn');
+  const provBtn=document.getElementById('provBtn');
+  btn.disabled=true; provBtn.disabled=true;
+  try{ await readSSE('/api/sync',{cohortNumber:previewData.cohortNumber,sheetUrl:previewData.sheetUrl},'provision','provision'); }
+  finally{ btn.disabled=false; provBtn.disabled=false; }
+}
+
+// ── Add Member ────────────────────────────────────────────────────────────────
+async function doAddMember(){
+  const cohortNumber=Number(document.getElementById('addCohortNum').value.trim());
+  const teamSlug=document.getElementById('addTeamSlug').value.trim();
+  const discordId=document.getElementById('addDiscordId').value.trim();
+  if(!cohortNumber||!teamSlug||!discordId){alert('Fill in all fields.');return;}
+  const btns=document.querySelectorAll('#panel-members .btn');
+  btns.forEach(b=>b.disabled=true);
+  try{ await readSSE('/api/add-member',{cohortNumber,teamSlug,discordId},'members','members'); }
+  finally{ btns.forEach(b=>b.disabled=false); }
+}
+
+// ── Remove Member ─────────────────────────────────────────────────────────────
+async function doRemoveMember(){
+  const cohortNumber=Number(document.getElementById('rmCohortNum').value.trim());
+  const discordId=document.getElementById('rmDiscordId').value.trim();
+  if(!cohortNumber||!discordId){alert('Fill in all fields.');return;}
+  if(!confirm(`Remove all GHOSTED roles from Discord ID ${discordId} in Cohort-${cohortNumber}?`)) return;
+  const btns=document.querySelectorAll('#panel-members .btn');
+  btns.forEach(b=>b.disabled=true);
+  try{ await readSSE('/api/remove-member',{cohortNumber,discordId},'members','members'); }
+  finally{ btns.forEach(b=>b.disabled=false); }
+}
+
+// ── List Cohorts ──────────────────────────────────────────────────────────────
+async function loadCohorts(){
+  const wrap=document.getElementById('cohortListWrap');
+  wrap.innerHTML='<div class="empty" style="padding:20px"><p>Loading…</p></div>';
+  try{
+    const cohorts=await fetch('/api/list-cohorts').then(r=>r.json());
+    if(cohorts.error){wrap.innerHTML=`<p style="color:var(--red);padding:12px">${cohorts.error}</p>`;return;}
+    if(!cohorts.length){wrap.innerHTML='<div class="empty" style="padding:20px"><p>No GHOSTED cohorts found in this server.</p></div>';return;}
+    wrap.innerHTML=`<table class="cohort-table">
+      <thead><tr><th>Cohort</th><th>Teams</th><th>Channels</th><th>Status</th></tr></thead>
+      <tbody>${cohorts.map(c=>`<tr>
+        <td><strong>${c.name}</strong></td>
+        <td>${c.teamCount}</td>
+        <td>${c.channelCount}</td>
+        <td><span class="badge ${c.archived?'archived':'live'}">${c.archived?'Archived':'Live'}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }catch(err){wrap.innerHTML=`<p style="color:var(--red);padding:12px">${err.message}</p>`;}
+}
+
+// ── Archive ───────────────────────────────────────────────────────────────────
+async function doArchive(){
+  const cohortNumber=Number(document.getElementById('archiveCohortNum').value.trim());
+  if(!cohortNumber){alert('Enter a cohort number.');return;}
+  if(!confirm(`Archive Cohort-${cohortNumber}? This will lock all channels read-only.`)) return;
+  const btns=document.querySelectorAll('#panel-manage .btn');
+  btns.forEach(b=>b.disabled=true);
+  try{ await readSSE('/api/archive',{cohortNumber},'manage','manage'); }
+  finally{ btns.forEach(b=>b.disabled=false); }
+}
+
+// ── Audit ─────────────────────────────────────────────────────────────────────
+async function doAudit(){
+  const cohortNumber=Number(document.getElementById('auditCohortNum').value.trim());
+  if(!cohortNumber){alert('Enter a cohort number.');return;}
+  const resultEl=document.getElementById('auditResult');
+  resultEl.innerHTML='<p style="color:var(--muted);font-size:13px">Auditing…</p>';
+  try{
+    const data=await fetch(`/api/audit/${cohortNumber}`).then(r=>r.json());
+    if(data.error){resultEl.innerHTML=`<p style="color:var(--red);font-size:13px">✗ ${data.error}</p>`;return;}
+    const statusColor=data.healthy?'var(--green)':'var(--red)';
+    const statusText=data.healthy?'✅ All checks passed':'❌ Issues found';
+    resultEl.innerHTML=`
+      <p style="font-weight:700;color:${statusColor};margin-bottom:10px">${statusText}</p>
+      ${data.issues.length?`<ul class="audit-list">${data.issues.map(i=>`<li class="audit-issue">✗ ${i}</li>`).join('')}</ul>`:''}
+      <ul class="audit-list" style="margin-top:8px">${data.ok.map(o=>`<li class="audit-ok">✓ ${o}</li>`).join('')}</ul>`;
+  }catch(err){resultEl.innerHTML=`<p style="color:var(--red);font-size:13px">✗ ${err.message}</p>`;}
+}
+
+// ── Enter key shortcuts ───────────────────────────────────────────────────────
+document.getElementById('sheetUrl').addEventListener('keydown',e=>{if(e.key==='Enter')doPreview();});
+document.getElementById('cohortNum').addEventListener('keydown',e=>{if(e.key==='Enter')doPreview();});
+</script>
+</body>
+</html>
