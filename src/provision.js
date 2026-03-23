@@ -442,11 +442,15 @@ async function cohortStats(guild, cohortNumber) {
     totalMembers = membersWithRole.size;
 
     for (const [, member] of membersWithRole) {
-      const teamRole = member.roles.cache.find(r => r.name.startsWith('Ghosted-team-'));
+      const teamRole = member.roles.cache.find(r => 
+        r.name.startsWith('Ghosted-') && 
+        r.name !== ROLE_GENERAL && 
+        !r.name.startsWith('Ghosted-cohort-')
+      );
       if (teamRole) {
-        const tSlug = teamRole.name.slice('Ghosted-team-'.length);
-        if (!stats[tSlug]) stats[tSlug] = { total: 0 };
-        stats[tSlug].total++;
+        const tSlug = teamRole.name.slice('Ghosted-'.length);
+        if (stats[tSlug]) stats[tSlug].total++;
+        else stats[tSlug] = { total: 1 };
       }
     }
   }
@@ -464,8 +468,12 @@ async function exportCohort(guild, cohortNumber) {
   let csv = 'Discord Tag,Discord ID,Team\n';
 
   for (const [, member] of membersWithRole) {
-    const teamRole = member.roles.cache.find(r => r.name.startsWith('Ghosted-team-'));
-    const tSlug = teamRole ? teamRole.name.slice('Ghosted-team-'.length) : 'Unknown';
+    const teamRole = member.roles.cache.find(r => 
+      r.name.startsWith('Ghosted-') && 
+      r.name !== ROLE_GENERAL && 
+      !r.name.startsWith('Ghosted-cohort-')
+    );
+    const tSlug = teamRole ? teamRole.name.slice('Ghosted-'.length) : 'Unknown';
     csv += `"${member.user.tag}","${member.user.id}","${tSlug}"\n`;
   }
 
