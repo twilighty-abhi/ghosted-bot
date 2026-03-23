@@ -1,5 +1,6 @@
 const { ChannelType, PermissionFlagsBits } = require('discord.js');
 const { slug } = require('./sheets');
+const { postWelcomeMessage } = require('./comms');
 
 const ROLE_GENERAL = 'Ghosted-general';
 const roleCohort   = n => `Ghosted-cohort-${n}`;
@@ -128,9 +129,12 @@ async function provisionCohort(guild, cohortNum, participants, teams, emit) {
       await sleep(300); // respect rate limits
     }
 
-    emit('done', { categoryName: categoryName(cohortNum), teams, assigned: assigned.length, skipped });
+    emit('done', { categoryName: categoryName(cohortNum), teams, assigned: assigned, skipped: skipped });
+  
+    // Post welcome message if configured
+    await postWelcomeMessage(guild, cohortNum, category.id);
+  
     return { assigned, skipped };
-
   } catch (err) { await rollback(err); }
 }
 
@@ -349,8 +353,138 @@ async function auditCohort(guild, cohortNum) {
   return { issues, ok, healthy: issues.length === 0 };
 }
 
+// ── Cohort Operations ─────────────────────────────────────────────────────────
+
+async function bulkRemoveCohort(guild, cohortNumber, emit) {
+  emit('step', { message: `🧹 Starting bulk remove for Cohort-${cohortNumber}…` });
+  
+  const cR = guild.roles.cache.find(r => r.name === roleCohort(cohortNumber));
+  if (!cR) throw new Error(`Role ${roleCohort(cohortNumber)} not found. Nothing to remove.`);
+
+  await guild.members.fetch();
+  const membersWithRole = guild.members.cache.filter(m => m.roles.cache.has(cR.id));
+  
+  if (membersWithRole.size === 0) {
+    emit('done', { channelCount: 0, removedCount: 0 }); // reuse payload shape roughly
+    return { count: 0 };
+  }
+
+  let removedCount = 0;
+  for (const [, member] of membersWithRole) {
+    const rolesToRemove = member.roles.cache.filter(r => 
+      r.name === 'Ghosted-general' || 
+      r.name === roleCohort(cohortNumber) || 
+      r.name.startsWith('Ghosted-team-')
+    );
+
+    if (rolesToRemove.size > 0) {
+      await member.roles.remove(rolesToRemove, `Bulk removed Cohort-${cohortNumber}`);
+      emit('step', { message: `  ✓ Removed roles from ${member.user.tag}` });
+      removedCount++;
+      await sleep(300); // Rate limit
+    }
+  }
+
+  emit('done', { removedCount });
+  return { count: removedCount };
+}
+
+async function transferMember(guild, cohortNumber, discordId, fromTeamSlug, toTeamSlug, emit) {
+  const cR = guild.roles.cache.find(r => r.name === roleCohort(cohortNumber));
+  if (!cR) throw new Error(`Role ${roleCohort(cohortNumber)} not found`);
+  
+  const oldTeamRole = guild.roles.cache.find(r => r.name === roleTeam(fromTeamSlug));
+  const newTeamRole = guild.roles.cache.find(r => r.name === roleTeam(toTeamSlug));
+  
+  if (!oldTeamRole) throw new Error(`Old team role Ghosted-team-${fromTeamSlug} not found`);
+  if (!newTeamRole) throw new Error(`New team role Ghosted-team-${toTeamSlug} not found`);
+
+  let member;
+  try { member = await guild.members.fetch(String(discordId)); }
+  catch { throw new Error(`Discord ID ${discordId} not found in this server.`); }
+
+  if (!member.roles.cache.has(cR.id)) {
+    throw new Error(`${member.user.tag} is not in Cohort-${cohortNumber}.`);
+  }
+  if (!member.roles.cache.has(oldTeamRole.id)) {
+    throw new Error(`${member.user.tag} is not in team ${fromTeamSlug}.`);
+  }
+
+  emit('step', { message: `Transferring ${member.user.tag} from ${fromTeamSlug} to ${toTeamSlug}…` });
+  await member.roles.remove(oldTeamRole, `Transferred out of ${fromTeamSlug}`);
+  await sleep(300);
+  await member.roles.add(newTeamRole, `Transferred into ${toTeamSlug}`);
+  
+  return { name: member.user.tag };
+}
+
+async function cohortStats(guild, cohortNumber) {
+  const catName = categoryName(cohortNumber);
+  const category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name === catName || c.name === `archived-ghosted-cohort-${cohortNumber}`));
+  if (!category) throw new Error(`Category for Cohort-${cohortNumber} not found`);
+
+  await guild.members.fetch();
+  const cR = guild.roles.cache.find(r => r.name === roleCohort(cohortNumber));
+  
+  const stats = {};
+  let totalMembers = 0;
+
+  // We find teams by looking at the channels in category
+  const teamChannels = guild.channels.cache.filter(c => c.parentId === category.id && c.name.startsWith('ghosted-team-'));
+  
+  teamChannels.forEach(ch => {
+    const slug = ch.name.slice('ghosted-team-'.length);
+    stats[slug] = { total: 0 };
+  });
+
+  if (cR) {
+    const membersWithRole = guild.members.cache.filter(m => m.roles.cache.has(cR.id));
+    totalMembers = membersWithRole.size;
+
+    for (const [, member] of membersWithRole) {
+      const teamRole = member.roles.cache.find(r => r.name.startsWith('Ghosted-team-'));
+      if (teamRole) {
+        const tSlug = teamRole.name.slice('Ghosted-team-'.length);
+        if (!stats[tSlug]) stats[tSlug] = { total: 0 };
+        stats[tSlug].total++;
+      }
+    }
+  }
+
+  return { activeMembers: totalMembers, isArchived: category.name.startsWith('archived-'), categoryName: category.name, teamStats: stats };
+}
+
+async function exportCohort(guild, cohortNumber) {
+  const cR = guild.roles.cache.find(r => r.name === roleCohort(cohortNumber));
+  if (!cR) throw new Error(`Role ${roleCohort(cohortNumber)} not found`);
+
+  await guild.members.fetch();
+  const membersWithRole = guild.members.cache.filter(m => m.roles.cache.has(cR.id));
+  
+  let csv = 'Discord Tag,Discord ID,Team\n';
+
+  for (const [, member] of membersWithRole) {
+    const teamRole = member.roles.cache.find(r => r.name.startsWith('Ghosted-team-'));
+    const tSlug = teamRole ? teamRole.name.slice('Ghosted-team-'.length) : 'Unknown';
+    csv += `"${member.user.tag}","${member.user.id}","${tSlug}"\n`;
+  }
+
+  return csv;
+}
+
 module.exports = {
-  provisionCohort, syncCohort, archiveCohort,
-  addMember, removeMember, listCohorts, auditCohort,
-  categoryName, roleCohort, roleTeam,
+  provisionCohort,
+  syncCohort,
+  archiveCohort,
+  addMember,
+  removeMember,
+  listCohorts,
+  auditCohort,
+  bulkRemoveCohort,
+  transferMember,
+  cohortStats,
+  exportCohort,
+  categoryName,
+  roleCohort,
+  roleTeam,
 };

@@ -15,13 +15,16 @@ body{font-family:"gg sans","Noto Sans","Helvetica Neue",sans-serif;background:va
 .app{max-width:860px;margin:0 auto}
 
 /* header */
-.header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.header{text-align:center;margin-bottom:24px}
+.header-top{display:flex;align-items:center;gap:14px;margin-bottom:20px}
 .logo{width:44px;height:44px;border-radius:50%;background:var(--blurple);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.header h1{font-size:20px;font-weight:700}
-.header p{font-size:13px;color:var(--muted);margin-top:2px}
+.header-top h1{font-size:20px;font-weight:700}
+.header-top p{font-size:13px;color:var(--muted);margin-top:2px}
 .pill{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;white-space:nowrap}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s;flex-shrink:0}
 .dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.btn-logout{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;transition:all .15s}
+.btn-logout:hover{background:var(--s1);color:var(--text);border-color:#5a5c63}
 
 /* tabs */
 .tabs{display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
@@ -138,12 +141,14 @@ input::placeholder{color:var(--muted)}
 <div class="app">
 
   <!-- header -->
-  <div class="header">
+  <div class="header-top">
     <div class="logo">👻</div>
     <div><h1>GHOSTED Bot</h1><p>Cohort management dashboard</p></div>
     <div class="pill">
       <div class="dot" id="dot"></div>
       <span id="dtag">Connecting…</span>
+      <div style="width:1px;height:12px;background:var(--border);margin:0 4px"></div>
+      <button class="btn-logout" onclick="doLogout()">Logout</button>
     </div>
   </div>
 
@@ -151,6 +156,7 @@ input::placeholder{color:var(--muted)}
   <div class="tabs">
     <button class="tab active" onclick="setTab('provision')" id="tab-provision">🚀 Provision</button>
     <button class="tab" onclick="setTab('members')" id="tab-members">👤 Members</button>
+    <button class="tab" onclick="setTab('comms')" id="tab-comms">📢 Comms</button>
     <button class="tab" onclick="setTab('manage')" id="tab-manage">⚙ Manage</button>
   </div>
 
@@ -249,9 +255,76 @@ input::placeholder{color:var(--muted)}
       </div>
     </div>
 
+    <!-- Transfer Member -->
+    <div class="card">
+      <div class="label">Transfer Member</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Move a member to a different team within the same cohort.</p>
+      <div class="row">
+        <div class="field">
+          <span>Cohort</span>
+          <input type="number" id="transferCohortNum" min="1" placeholder="2" style="width:80px">
+        </div>
+        <div class="field grow">
+          <span>Discord ID</span>
+          <input type="text" id="transferDiscordId" placeholder="123456789012345678">
+        </div>
+        <div class="field grow">
+          <span>From Team</span>
+          <input type="text" id="transferFromTeam" placeholder="old-team">
+        </div>
+        <div class="field grow">
+          <span>To Team</span>
+          <input type="text" id="transferToTeam" placeholder="new-team">
+        </div>
+        <button class="btn" onclick="doTransferMember()">⇄ Transfer</button>
+      </div>
+    </div>
+
     <div class="logwrap" id="logwrap-members">
       <div class="loghdr"><span>Live Log</span><span id="logStatus-members" style="color:var(--yellow)">Running…</span></div>
       <div class="logbody" id="logbody-members"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: COMMS ════════════════════════════════════════════════════ -->
+  <div class="panel" id="panel-comms">
+    
+    <!-- Broadcast -->
+    <div class="card">
+      <div class="label">Broadcast Announcement</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Post a message to <code>#ghosted-announcements</code> in a specific cohort.</p>
+      <div class="row" style="align-items:flex-start">
+        <div class="field">
+          <span>Cohort number</span>
+          <input type="number" id="broadcastCohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <div class="field grow">
+          <span>Message</span>
+          <textarea id="broadcastMessage" placeholder="Hello everyone! Program starts tomorrow at 10 AM..." style="width:100%;height:80px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:10px;color:var(--text);font-family:inherit;font-size:14px;resize:vertical"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:10px"><button class="btn" onclick="doBroadcast()">📢 Send Broadcast</button></div>
+    </div>
+
+    <!-- Team DM -->
+    <div class="card">
+      <div class="label">Team Direct Message (DM)</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Send a DM individually to every member of a specific team.</p>
+      <div class="row" style="align-items:flex-start">
+        <div class="field">
+          <span>Cohort number</span>
+          <input type="number" id="dmCohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <div class="field">
+          <span>Team slug</span>
+          <input type="text" id="dmTeamSlug" placeholder="team-a" style="width:140px">
+        </div>
+        <div class="field grow">
+          <span>Message</span>
+          <textarea id="dmMessage" placeholder="Hey team, don't forget to submit your project..." style="width:100%;height:80px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:10px;color:var(--text);font-family:inherit;font-size:14px;resize:vertical"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:10px"><button class="btn" onclick="doTeamDM()">💬 Send Team DMs</button></div>
     </div>
   </div>
 
@@ -266,6 +339,32 @@ input::placeholder{color:var(--muted)}
       </div>
       <div id="cohortListWrap">
         <div class="empty" style="padding:20px"><p>Click Refresh to load cohorts</p></div>
+      </div>
+    </div>
+
+    <!-- Stats & Export -->
+    <div class="card">
+      <div class="label">Cohort Data & Export</div>
+      <div class="row">
+        <div class="field">
+          <span>Cohort</span>
+          <input type="number" id="manageCohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <button class="btn teal" onclick="doExportCSV()">📄 Export CSV</button>
+        <button class="btn" onclick="loadStats()">📊 View Stats</button>
+      </div>
+      <div id="statsWrap" style="margin-top:14px"></div>
+    </div>
+
+    <!-- Bulk Remove -->
+    <div class="card">
+      <div class="label" style="color:var(--red)">Bulk Actions</div>
+      <div class="row">
+        <div class="field">
+          <span>Cohort</span>
+          <input type="number" id="bulkRemoveCohortNum" min="1" placeholder="2" style="width:110px">
+        </div>
+        <button class="btn red" onclick="doBulkRemove()">🧹 Bulk Remove All Roles</button>
       </div>
     </div>
 
@@ -294,6 +393,17 @@ input::placeholder{color:var(--muted)}
         <button class="btn" onclick="doAudit()">🔍 Audit</button>
       </div>
       <div id="auditResult" style="margin-top:14px"></div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="card">
+      <div class="label" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Recent Activity Log</span>
+        <button class="btn" style="height:32px;font-size:12px;padding:0 14px" onclick="loadActivityLog()">↻ Refresh</button>
+      </div>
+      <div id="activityLogWrap" style="margin-top:14px;max-height:300px;overflow-y:auto;background:var(--s1);border:1px solid var(--border);border-radius:6px">
+        <div class="empty" style="padding:20px"><p>Click Refresh to load logs</p></div>
+      </div>
     </div>
 
     <div class="logwrap" id="logwrap-manage">
@@ -495,6 +605,20 @@ async function doRemoveMember(){
   finally{ btns.forEach(b=>b.disabled=false); }
 }
 
+// ── Transfer Member ───────────────────────────────────────────────────────────
+async function doTransferMember(){
+  const cohortNumber=Number(document.getElementById('transferCohortNum').value.trim());
+  const discordId=document.getElementById('transferDiscordId').value.trim();
+  const fromTeam=document.getElementById('transferFromTeam').value.trim();
+  const toTeam=document.getElementById('transferToTeam').value.trim();
+  if(!cohortNumber||!discordId||!fromTeam||!toTeam){alert('Fill in all fields.');return;}
+  if(!confirm(`Transfer ID ${discordId} from ${fromTeam} to ${toTeam}?`)) return;
+  const btns=document.querySelectorAll('#panel-members .btn');
+  btns.forEach(b=>b.disabled=true);
+  try{ await readSSE('/api/transfer-member',{cohortNumber,discordId,fromTeam,toTeam},'members','members'); }
+  finally{ btns.forEach(b=>b.disabled=false); }
+}
+
 // ── List Cohorts ──────────────────────────────────────────────────────────────
 async function loadCohorts(){
   const wrap=document.getElementById('cohortListWrap');
@@ -513,6 +637,53 @@ async function loadCohorts(){
       </tr>`).join('')}</tbody>
     </table>`;
   }catch(err){wrap.innerHTML=`<p style="color:var(--red);padding:12px">${err.message}</p>`;}
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function doExportCSV(){
+  const c=Number(document.getElementById('manageCohortNum').value);
+  if(!c) return alert('Enter cohort number');
+  window.location.href=`/api/export/${c}`;
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats(){
+  const c=Number(document.getElementById('manageCohortNum').value);
+  if(!c) return alert('Enter cohort number');
+  const wrap=document.getElementById('statsWrap');
+  wrap.innerHTML='<p style="color:var(--muted);font-size:13px">Loading stats…</p>';
+  try{
+    const r=await fetch(`/api/stats/${c}`);
+    if(!r.ok) throw new Error(await r.text());
+    const data=await r.json();
+    let html=`
+      <div style="background:var(--s2);padding:14px;border-radius:6px;font-size:13px">
+        <div style="margin-bottom:10px"><strong>Status:</strong> <span class="badge ${data.isArchived?'archived':'live'}">${data.isArchived?'Archived':'Live'}</span></div>
+        <div style="margin-bottom:14px"><strong>Total Active Members:</strong> ${data.activeMembers}</div>
+        <table class="cohort-table" style="background:var(--s1);border-radius:6px;overflow:hidden">
+          <thead><tr><th>Team</th><th>Members Assigned</th></tr></thead>
+          <tbody>
+            ${Object.entries(data.teamStats).map(([t,s])=>`<tr><td>${t}</td><td>${s.total}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    wrap.innerHTML=html;
+  }catch(err){
+    let e=err.message; try{e=JSON.parse(e).error;}catch{}
+    wrap.innerHTML=`<p style="color:var(--red);font-size:13px">✗ ${e}</p>`;
+  }
+}
+
+// ── Bulk Remove ───────────────────────────────────────────────────────────────
+async function doBulkRemove(){
+  const cohortNumber=Number(document.getElementById('bulkRemoveCohortNum').value.trim());
+  if(!cohortNumber){alert('Enter cohort number.');return;}
+  if(!confirm(`WARNING: Remove ALL GHOSTED roles from EVERY member in Cohort-${cohortNumber}? This cannot be undone.`)) return;
+  const btns=document.querySelectorAll('#panel-manage .btn');
+  btns.forEach(b=>b.disabled=true);
+  try{ await readSSE('/api/bulk-remove',{cohortNumber},'manage','manage'); }
+  finally{ btns.forEach(b=>b.disabled=false); }
 }
 
 // ── Archive ───────────────────────────────────────────────────────────────────
@@ -542,6 +713,78 @@ async function doAudit(){
       ${data.issues.length?`<ul class="audit-list">${data.issues.map(i=>`<li class="audit-issue">✗ ${i}</li>`).join('')}</ul>`:''}
       <ul class="audit-list" style="margin-top:8px">${data.ok.map(o=>`<li class="audit-ok">✓ ${o}</li>`).join('')}</ul>`;
   }catch(err){resultEl.innerHTML=`<p style="color:var(--red);font-size:13px">✗ ${err.message}</p>`;}
+}
+
+// ── Activity Log ──────────────────────────────────────────────────────────────
+async function loadActivityLog(){
+  const wrap=document.getElementById('activityLogWrap');
+  wrap.innerHTML='<div class="empty" style="padding:20px"><p>Loading…</p></div>';
+  try{
+    const logs=await fetch('/api/activity-log').then(r=>r.json());
+    if(logs.error){wrap.innerHTML=`<p style="color:var(--red);padding:12px">${logs.error}</p>`;return;}
+    if(!logs.length){wrap.innerHTML='<div class="empty" style="padding:20px"><p>No activity recorded yet.</p></div>';return;}
+    
+    wrap.innerHTML=`<table class="cohort-table">
+      <thead><tr><th>Time</th><th>Action</th><th>Cohort</th><th>User</th><th>Details</th></tr></thead>
+      <tbody>${logs.map(l=>{
+        const d=new Date(l.created_at).toLocaleString();
+        let dets='';
+        try{dets=JSON.stringify(l.details).slice(0,40)+(JSON.stringify(l.details).length>40?'…':'');}catch{}
+        return `<tr>
+          <td style="font-size:11px;color:var(--muted)">${d}</td>
+          <td><span class="badge live" style="background:var(--s3)">${l.action}</span></td>
+          <td>${l.cohort_number||'—'}</td>
+          <td>${l.username}</td>
+          <td style="font-size:11px;color:var(--muted);font-family:monospace" title='${JSON.stringify(l.details)}'>${dets}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }catch(err){wrap.innerHTML=`<p style="color:var(--red);padding:12px">${err.message}</p>`;}
+}
+
+// ── Comms ─────────────────────────────────────────────────────────────────────
+async function doBroadcast(){
+  const cohortNumber=Number(document.getElementById('broadcastCohortNum').value);
+  const message=document.getElementById('broadcastMessage').value.trim();
+  if(!cohortNumber||!message) return alert('Enter cohort and message');
+  
+  const btn=event.target; btn.disabled=true; btn.textContent='Sending...';
+  try{
+    const r=await fetch('/api/broadcast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cohortNumber,message})});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    alert('✅ Broadcast sent to #'+d.channel);
+    document.getElementById('broadcastMessage').value='';
+  }catch(e){alert('❌ '+e.message);}
+  finally{btn.disabled=false; btn.textContent='📢 Send Broadcast';}
+}
+
+async function doTeamDM(){
+  const cohortNumber=Number(document.getElementById('dmCohortNum').value);
+  const teamSlug=document.getElementById('dmTeamSlug').value.trim();
+  const message=document.getElementById('dmMessage').value.trim();
+  if(!cohortNumber||!teamSlug||!message) return alert('Enter cohort, team, and message');
+  
+  if(!confirm(`Send DM to ALL members of ${teamSlug} in Cohort-${cohortNumber}?`)) return;
+
+  const btn=event.target; btn.disabled=true; btn.textContent='Sending DMs...';
+  try{
+    const r=await fetch('/api/team-dm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cohortNumber,teamSlug,message})});
+    const d=await r.json();
+    if(d.error) throw new Error(d.error);
+    alert(`✅ DMs processed: ${d.sent} sent, ${d.failed} failed.`);
+    document.getElementById('dmMessage').value='';
+  }catch(e){alert('❌ '+e.message);}
+  finally{btn.disabled=false; btn.textContent='💬 Send Team DMs';}
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function doLogout(){
+  if(!confirm('Log out of dashboard?')) return;
+  try{
+    await fetch('/api/logout',{method:'POST'});
+    window.location.href='/login.html';
+  }catch(e){alert('Error logging out');}
 }
 
 // ── Enter key shortcuts ───────────────────────────────────────────────────────
