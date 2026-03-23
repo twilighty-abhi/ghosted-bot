@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — GHOSTED Bot</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1e1f22;--s1:#2b2d31;--s2:#313338;--border:#3f4147;
+  --blurple:#5865f2;--blurple2:#4752c4;--text:#dbdee1;--muted:#949ba4;--r:8px;
+  --red:#ed4245;
+}
+body{font-family:"gg sans","Noto Sans","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:32px;width:100%;max-width:400px;box-shadow:0 8px 16px rgba(0,0,0,0.2)}
+.header{text-align:center;margin-bottom:24px}
+.logo{width:56px;height:56px;border-radius:50%;background:var(--blurple);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px}
+.header h1{font-size:22px;font-weight:700}
+.header p{font-size:14px;color:var(--muted);margin-top:4px}
+.field{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.field label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
+input[type=text],input[type=password]{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px 14px;color:var(--text);font-size:15px;outline:none;transition:border-color .15s;width:100%}
+input:focus{border-color:var(--blurple)}
+.btn{background:var(--blurple);color:#fff;border:none;border-radius:4px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s;width:100%;margin-top:8px}
+.btn:hover:not(:disabled){background:var(--blurple2)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.error{display:none;color:var(--red);font-size:13px;margin-bottom:16px;text-align:center;background:#3a1a1b;border:1px solid #6b2426;padding:10px;border-radius:4px}
+.error.on{display:block}
+</style>
+</head>
+<body>
+<div class="login-box">
+  <div class="header">
+    <div class="logo">👻</div>
+    <h1>Welcome Back</h1>
+    <p>Sign in to manage cohorts</p>
+  </div>
+  <form id="loginForm">
+    <div class="error" id="error"></div>
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" autocomplete="username" value="admin" required autofocus>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn" id="loginBtn">Log In</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const u = document.getElementById('username').value;
+  const p = document.getElementById('password').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('error');
+  
+  btn.disabled = true;
+  err.className = 'error';
+  
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const data = await res.json();
+    
+    if (res.ok) {
+      window.location.href = '/';
+    } else {
+      err.textContent = data.error || 'Login failed';
+      err.className = 'error on';
+      btn.disabled = false;
+    }
+  } catch (error) {
+    err.textContent = 'Network error. Please try again.';
+    err.className = 'error on';
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
