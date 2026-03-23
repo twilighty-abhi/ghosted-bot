@@ -443,9 +443,9 @@ async function cohortStats(guild, cohortNumber) {
 
     for (const [, member] of membersWithRole) {
       const teamRole = member.roles.cache.find(r => 
-        r.name.startsWith('Ghosted-') && 
-        r.name !== ROLE_GENERAL && 
-        !r.name.startsWith('Ghosted-cohort-')
+        r.name.toLowerCase().startsWith('ghosted-') && 
+        r.name.toLowerCase() !== ROLE_GENERAL.toLowerCase() && 
+        !r.name.toLowerCase().startsWith('ghosted-cohort-')
       );
       if (teamRole) {
         const tSlug = teamRole.name.slice('Ghosted-'.length);
@@ -469,9 +469,9 @@ async function exportCohort(guild, cohortNumber) {
 
   for (const [, member] of membersWithRole) {
     const teamRole = member.roles.cache.find(r => 
-      r.name.startsWith('Ghosted-') && 
-      r.name !== ROLE_GENERAL && 
-      !r.name.startsWith('Ghosted-cohort-')
+      r.name.toLowerCase().startsWith('ghosted-') && 
+      r.name.toLowerCase() !== ROLE_GENERAL.toLowerCase() && 
+      !r.name.toLowerCase().startsWith('ghosted-cohort-')
     );
     const tSlug = teamRole ? teamRole.name.slice('Ghosted-'.length) : 'Unknown';
     csv += `"${member.user.tag}","${member.user.id}","${tSlug}"\n`;
