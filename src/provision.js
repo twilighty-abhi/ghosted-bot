@@ -132,7 +132,7 @@ async function provisionCohort(guild, cohortNum, participants, teams, emit) {
     emit('done', { categoryName: categoryName(cohortNum), teams, assigned: assigned, skipped: skipped });
   
     // Post welcome message if configured
-    await postWelcomeMessage(guild, cohortNum, category.id);
+    await postWelcomeMessage(guild, cohortNum, category.id, welcomeMessage);
   
     return { assigned, skipped };
   } catch (err) { await rollback(err); }

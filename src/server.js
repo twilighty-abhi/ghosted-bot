@@ -122,7 +122,7 @@ app.post('/api/preview', async (req, res) => {
 app.post('/api/provision', async (req, res) => {
   if (!ready) return res.status(503).json({ error: 'Discord not ready.' });
   const cohortNumber = Number(req.body.cohortNumber);
-  const { sheetUrl } = req.body;
+  const { sheetUrl, welcomeMessage } = req.body;
   if (!cohortNumber || !sheetUrl) return res.status(400).json({ error: 'cohortNumber and sheetUrl required' });
 
   const guardKey = `${process.env.GUILD_ID}:${cohortNumber}`;
@@ -139,7 +139,7 @@ app.post('/api/provision', async (req, res) => {
   catch (err) { write('error', { message: err.message }); activeProvisions.delete(guardKey); return res.end(); }
 
   if (data.warnings.length) data.warnings.forEach(w => write('log', { level: 'warn', text: w }));
-  try { await provisionCohort(guild, cohortNumber, data.participants, Object.keys(data.teams), emit); }
+  try { await provisionCohort(guild, cohortNumber, data.participants, emit, welcomeMessage); }
   catch (err) { write('error', { message: err.message }); }
   finally { activeProvisions.delete(guardKey); }
   write('all_done', {}); res.end();

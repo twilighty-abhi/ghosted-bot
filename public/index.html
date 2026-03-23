@@ -199,6 +199,14 @@ input::placeholder{color:var(--muted)}
       </div>
     </div>
 
+    <div class="card" id="welcomeCfg" style="margin-bottom:20px;display:none">
+      <div class="label" style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="sendWelcome" checked onchange="document.getElementById('welcomeText').disabled=!this.checked">
+        <label for="sendWelcome" style="cursor:pointer;text-transform:none;letter-spacing:normal">Post welcome message to #ghosted-general on completion</label>
+      </div>
+      <textarea id="welcomeText" style="width:100%;height:60px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:10px;color:var(--text);font-family:inherit;font-size:14px;resize:vertical;margin-top:10px">Welcome to GHOSTED! Please check your private team channel.</textarea>
+    </div>
+
     <div class="provbar" id="provbar">
       <div class="provinfo">
         <strong id="provSummary"></strong>
@@ -555,6 +563,9 @@ function render({teams,warnings,memberCount,teamCount},cohortNum,cohortExists=fa
 
   document.getElementById('provSummary').textContent=`GHOSTED Cohort-${cohortNum} · ${teamCount} teams · ${memberCount} members`;
   document.getElementById('provbar').classList.add('on');
+  if(!cohortExists) document.getElementById('welcomeCfg').style.display='block';
+  else document.getElementById('welcomeCfg').style.display='none';
+  
   document.getElementById('provBtn').disabled=!!cohortExists;
   document.getElementById('syncBtn').disabled=!cohortExists;
   document.getElementById('provBtn').title=cohortExists?'Cohort exists — use Sync or delete category first.':'';
@@ -566,8 +577,10 @@ async function doProvision(){
   if(!previewData) return;
   const btn=document.getElementById('provBtn');
   const syncBtn=document.getElementById('syncBtn');
+  const welcomeText=document.getElementById('sendWelcome').checked ? document.getElementById('welcomeText').value : null;
+  
   btn.disabled=true; syncBtn.disabled=true;
-  try{ await readSSE('/api/provision',{cohortNumber:previewData.cohortNumber,sheetUrl:previewData.sheetUrl},'provision','provision'); }
+  try{ await readSSE('/api/provision',{cohortNumber:previewData.cohortNumber,sheetUrl:previewData.sheetUrl,welcomeMessage:welcomeText},'provision','provision'); }
   finally{ btn.disabled=false; syncBtn.disabled=false; }
 }
 

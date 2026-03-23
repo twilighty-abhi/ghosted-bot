@@ -53,7 +53,6 @@ SESSION_SECRET="generate_random_long_string"
 
 # Optional enhancements
 BOT_LOG_CHANNEL_ID="channel_id_for_webhooks_and_leave_alerts"
-WELCOME_MESSAGE="Welcome to GHOSTED! Please check your private team channel."
 
 # Active cohort category (Optional: defaults to none)
 ACTIVE_CATEGORY_ID="optional_parent_category_id_for_active_cohorts"

@@ -40,8 +40,7 @@ async function sendTeamDM(guild, cohortNumber, teamSlug, messageText) {
   return { sent, failed, total: members.size };
 }
 
-async function postWelcomeMessage(guild, cohortNumber, categoryId) {
-  const welcomeText = process.env.WELCOME_MESSAGE;
+async function postWelcomeMessage(guild, cohortNumber, categoryId, welcomeText) {
   if (!welcomeText) return;
 
   const generalChannel = guild.channels.cache.find(c => c.parentId === categoryId && c.name === 'ghosted-general');
