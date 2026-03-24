@@ -23,8 +23,8 @@ Row 1 must be headers. Required columns (names are flexible, just must contain t
 
 | Team | Name | Discord ID |
 |---|---|---|
-| Sankalp | Rahul | 123456789012345678 |
-| Canopy Commons | Neha | 987654321098765432 |
+| organisation 1 | Rahul | 123456789012345678 |
+| organisation 2 | Neha | 987654321098765432 |
 
 - **Discord ID** = 18-digit user ID (not username). Enable Developer Mode → right-click user → Copy User ID.
 - Sheet must be shared as **"Anyone with the link → Viewer"**.
