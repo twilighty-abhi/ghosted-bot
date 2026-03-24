@@ -1,7 +1,6 @@
 # GHOSTED Bot
-*Built by Abhiram ([abhiramnj.com](https://abhiramnj.com))*
-
-Discord bot for provisioning GHOSTED cohorts from Google Sheets.
+A Discord bot for managing GHOSTED program cohorts. Automates the creation of cohort categories, team channels, and roles from a Google Sheet — and assigns them to participants in one click via a local browser GUI or slash commands.
+*Built by ([abhiram](https://abhiramnj.com))*
 
 ---
 
