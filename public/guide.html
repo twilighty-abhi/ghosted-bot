@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GHOSTED Bot — User Guide</title>
+  <style>
+    :root {
+      --bg: #36393f; --s1: #2f3136; --s2: #202225;
+      --text: #dcddde; --t2: #8e9297; --border: #40444b;
+      --blue: #5865f2; --green: #3ba55c; --red: #ed4245; --yellow: #fee75c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px; margin: 40px auto;
+      padding: 0 20px;
+    }
+    .header {
+      text-align: center; margin-bottom: 40px;
+    }
+    .header h1 {
+      margin: 0; font-size: 32px; color: #fff;
+    }
+    .header p {
+      color: var(--t2); font-size: 16px; margin-top: 8px;
+    }
+    .section {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .section h2 {
+      margin-top: 0; color: #fff; display: flex; align-items: center; gap: 10px;
+    }
+    .section h2 span {
+      background: var(--s2); padding: 4px 10px; border-radius: 4px; font-size: 14px;
+      color: var(--blue); border: 1px solid var(--border);
+    }
+    .tip {
+      background: rgba(59, 165, 92, 0.1);
+      border-left: 4px solid var(--green);
+      padding: 12px 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 16px 0;
+      color: #fff;
+    }
+    .warn {
+      background: rgba(237, 66, 69, 0.1);
+      border-left: 4px solid var(--red);
+      padding: 12px 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 16px 0;
+      color: #fff;
+    }
+    img.demo {
+      max-width: 100%; border-radius: 6px; border: 1px solid var(--border);
+      margin: 10px 0; display: block;
+    }
+    code {
+      background: var(--s2); padding: 2px 6px; border-radius: 4px;
+      font-family: monospace; font-size: 13px; color: var(--yellow);
+    }
+    ul.steps {
+      padding-left: 20px; margin: 0;
+    }
+    ul.steps li {
+      margin-bottom: 10px;
+    }
+    .btn-mock {
+      display: inline-block; background: var(--blue); color: #fff;
+      padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>👻 GHOSTED Bot Guide</h1>
+    <p>The definitive guide to managing your student cohorts and teams.</p>
+  </div>
+
+  <div class="section">
+    <h2><span>1</span> The Google Sheet (The Foundation)</h2>
+    <p>Before using the bot, you must format your Google Sheet correctly so the bot understands who belongs to which team.</p>
+    <ul class="steps">
+      <li>The sheet requires exactly three columns (the order doesn't matter): <code>Name</code>, <code>Discord ID</code>, and <code>Team</code>.</li>
+      <li>Click <strong>Share</strong> in the top right of your Google Sheet.</li>
+      <li>Set General access to <strong>"Anyone with the link"</strong> can <strong>"Viewer"</strong>.</li>
+    </ul>
+    <div class="tip"><strong>Finding Discord IDs:</strong> Students must enable "Developer Mode" in Discord settings to right-click their own profile and copy their 18-digit Discord ID.</div>
+  </div>
+
+  <div class="section">
+    <h2><span>2</span> Creating a New Cohort (Provisioning)</h2>
+    <p>When a new cohort launches, you use the <strong>Provision</strong> tab to instantly build all their channels and roles.</p>
+    <ul class="steps">
+      <li>Enter the <strong>Cohort Number</strong> (e.g., 2).</li>
+      <li>Paste the Google Sheet URL and click <span class="btn-mock" style="background:var(--blue)">Preview</span>.</li>
+      <li>Review the live preview grid. You will see exactly how many teams are being built.</li>
+      <li>If there are yellow spreadsheet warnings (e.g., invalid Discord IDs), open your spreadsheet and fix them! Hit preview again to refresh.</li>
+      <li>Decide if you want a Welcome Message posted, then click <span class="btn-mock" style="background:var(--green)">⚡ Provision</span>.</li>
+    </ul>
+    <p>The bot will create the main category, announcement and general channels, private team channels, and assign the proper roles to everyone currently inside the Discord server.</p>
+  </div>
+
+  <div class="section">
+    <h2><span>3</span> Adding Late Joiners (Syncing)</h2>
+    <p>If a student joins the Discord server <em>after</em> you've already provisioned the cohort, you need to sync them.</p>
+    <ul class="steps">
+      <li>Ensure their Discord ID is updated in the Google Sheet.</li>
+      <li>In the Provision tab, enter the Cohort Number and Sheet URL, and click Preview.</li>
+      <li>The grid will show <span style="color:var(--yellow)">⏳</span> next to students who are newly in the server but missing roles.</li>
+      <li>Click <span class="btn-mock" style="background:#1abc9c">🔄 Sync</span>.</li>
+    </ul>
+    <p>Sync strictly gives roles to missing members and ignores everyone else. It does <strong>not</strong> create new channels!</p>
+  </div>
+
+  <div class="section">
+    <h2><span>4</span> Manual Overrides (Members Tab)</h2>
+    <p>Sometimes you need to quickly fix a single student without messing with spreadsheets. Head to the <strong>Members</strong> tab.</p>
+    <ul class="steps">
+      <li><strong>Add Single Member:</strong> Paste their Discord ID, select their Cohort, type their team tag, and hit Add.</li>
+      <li><strong>Transfer Teams:</strong> Enter their ID, their old team, and their new team. The bot will instantly swap their roles.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2><span>5</span> Communication (Comms Tab)</h2>
+    <p>Organizers can use the bot to broadcast messages without leaving the dashboard.</p>
+    <ul class="steps">
+      <li><strong>Broadcasts:</strong> Dumps your exact message directly into a cohort's locked <code>#ghosted-announcements</code> channel.</li>
+      <li><strong>Team DMs:</strong> Select a specific Cohort and Team (e.g., Cohort 2, Team "dalai-lama"). Type your message, and the bot will physically Direct Message every student in that team.</li>
+    </ul>
+    <div class="warn">Use Team DMs sparingly—Discord restricts bots that spam too many Direct Messages at once!</div>
+  </div>
+
+  <div class="section">
+    <h2><span>6</span> Tearing Down Cohorts (Manage Tab)</h2>
+    <p>When a cohort naturally concludes, you can clean up the server to preserve space.</p>
+    <ul class="steps">
+      <li><strong>View Stats:</strong> Check live, up-to-date counts of how many real people exist in each team.</li>
+      <li><strong>Export CSV:</strong> Downloads the exact roster of the active cohort for your records.</li>
+      <li><strong>Bulk Remove:</strong> Instantly rips the `Ghosted-cohort` and `Ghosted-team` roles away from every student in the cohort. They lose access immediately.</li>
+      <li><strong>Archive Cohort:</strong> <em>(Available via slash-commands inside Discord)</em> Locks all channels so students can read them but never type again.</li>
+    </ul>
+    <p>Finally, you can check the <strong>Activity Log</strong> at the bottom of the Manage tab to see a permanent audit trail of who transferred who, and when cohorts were built!</p>
+  </div>
+
+  <div style="text-align:center;margin:40px 0;color:var(--t2);font-size:14px">
+    Built with ❤️ by the GHOSTED Engineering Team
+  </div>
+
+</div>
+
+</body>
+</html>
