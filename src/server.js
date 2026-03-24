@@ -112,6 +112,20 @@ app.post('/api/preview', async (req, res) => {
         const catName = `GHOSTED Cohort-${Number(cohortNumber)}`;
         const { ChannelType } = require('discord.js');
         cohortExists = !!guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && c.name === catName);
+
+        if (cohortExists) {
+          await guild.members.fetch().catch(() => {});
+          for (const p of data.participants) {
+            if (!p.discordId) { p.status = 'no_id'; continue; }
+            const member = guild.members.cache.get(String(p.discordId));
+            if (!member) { p.status = 'not_in_server'; continue; }
+            
+            const hasCohort = member.roles.cache.some(r => r.name === `Ghosted-cohort-${cohortNumber}`);
+            const hasTeam = member.roles.cache.some(r => r.name.toLowerCase() === `ghosted-${p.team.toLowerCase()}`);
+            if (hasCohort && hasTeam) p.status = 'assigned';
+            else p.status = 'pending';
+          }
+        }
       }
     }
     res.json({ teamCount, memberCount, teams: data.teams, warnings: data.warnings, cohortExists });

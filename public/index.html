@@ -554,7 +554,12 @@ function render({teams,warnings,memberCount,teamCount},cohortNum,cohortExists=fa
         ${members.map(m=>`
           <li class="mi">
             <div class="av" style="background:${c}">${ini(m.name)}</div>
-            <span>${m.name}</span>
+            <span style="display:flex;align-items:center;gap:6px">
+              ${m.name}
+              ${m.status === 'assigned' ? '<span style="color:var(--green);font-size:12px" title="Roles assigned">✔</span>' : ''}
+              ${m.status === 'not_in_server' ? '<span style="color:var(--red);font-size:12px" title="Not in server">❌</span>' : ''}
+              ${m.status === 'pending' ? '<span style="color:var(--yellow);font-size:12px" title="Pending role sync">⏳</span>' : ''}
+            </span>
             <span class="mid ${m.discordId?'':'none'}">${m.discordId?'···'+m.discordId.slice(-4):'⚠ no ID'}</span>
           </li>`).join('')}
       </ul>`;
