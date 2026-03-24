@@ -72,6 +72,9 @@ async function provisionCohort(guild, cohortNum, participants, teams, emit) {
       teamRoles[team] = await getOrCreateRole(guild, roleTeam(team), 0xfee75c);
     }
 
+    const orgRole = guild.roles.cache.find(r => r.name.toLowerCase() === 'ghosted-organizers');
+    const orgOverwrite = orgRole ? [{ id: orgRole.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }] : [];
+
     // 3. #ghosted-announcements
     emit('step', { message: 'Creating #ghosted-announcements' });
     await guild.channels.create({
@@ -79,6 +82,7 @@ async function provisionCohort(guild, cohortNum, participants, teams, emit) {
       permissionOverwrites: [
         { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
         { id: cohortRole.id, allow: [PermissionFlagsBits.ViewChannel], deny: [PermissionFlagsBits.SendMessages] },
+        ...orgOverwrite,
       ],
     });
 
@@ -89,6 +93,7 @@ async function provisionCohort(guild, cohortNum, participants, teams, emit) {
       permissionOverwrites: [
         { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
         { id: cohortRole.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
+        ...orgOverwrite,
       ],
     });
 
@@ -101,6 +106,7 @@ async function provisionCohort(guild, cohortNum, participants, teams, emit) {
           { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
           { id: cohortRole.id, deny: [PermissionFlagsBits.ViewChannel] },
           { id: teamRoles[team].id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
+          ...orgOverwrite,
         ],
       });
     }
