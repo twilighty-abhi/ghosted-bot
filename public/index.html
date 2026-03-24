@@ -648,10 +648,11 @@ async function loadCohorts(){
     if(cohorts.error){wrap.innerHTML=`<p style="color:var(--red);padding:12px">${cohorts.error}</p>`;return;}
     if(!cohorts.length){wrap.innerHTML='<div class="empty" style="padding:20px"><p>No GHOSTED cohorts found in this server.</p></div>';return;}
     wrap.innerHTML=`<table class="cohort-table">
-      <thead><tr><th>Cohort</th><th>Teams</th><th>Channels</th><th>Status</th></tr></thead>
+      <thead><tr><th>Cohort</th><th>Teams</th><th>Members</th><th>Channels</th><th>Status</th></tr></thead>
       <tbody>${cohorts.map(c=>`<tr>
         <td><strong>${c.name}</strong></td>
         <td>${c.teamCount}</td>
+        <td>${c.memberCount}</td>
         <td>${c.channelCount}</td>
         <td><span class="badge ${c.archived?'archived':'live'}">${c.archived?'Archived':'Live'}</span></td>
       </tr>`).join('')}</tbody>

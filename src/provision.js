@@ -294,6 +294,7 @@ async function removeMember(guild, cohortNum, discordId, emit) {
 
 async function listCohorts(guild) {
   await guild.channels.fetch();
+  await guild.members.fetch();
   return [...guild.channels.cache
     .filter(c =>
       c.type === ChannelType.GuildCategory &&
@@ -308,10 +309,14 @@ async function listCohorts(guild) {
         : cat.name.replace('GHOSTED Cohort-', '');
       const channels = guild.channels.cache.filter(c => c.parentId === cat.id);
       const teamChannels = [...channels.values()].filter(c => c.name.startsWith('ghosted-team-'));
+      const cR = guild.roles.cache.find(r => r.name === roleCohort(cohortNum));
+      const memberCount = cR ? guild.members.cache.filter(m => m.roles.cache.has(cR.id)).size : 0;
+
       return {
         id: cat.id, name: cat.name, archived, cohortNum,
         channelCount: channels.size,
         teamCount: teamChannels.length,
+        memberCount
       };
     });
 }
