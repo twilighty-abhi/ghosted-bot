@@ -96,6 +96,38 @@ Enter cohort number + sheet URL → Preview → Provision.
 
 ---
 
+## Production Server Deployment
+
+When deploying to a live VPS (like DigitalOcean or AWS), use PM2 to keep the bot alive and configure Nginx to route your domain to the web dashboard securely.
+
+### 1. Launch with PM2
+PM2 will run the bot in the background and automatically enforce `NODE_ENV=production` for secure cookies.
+```bash
+npm ci
+npx pm2 start ecosystem.config.js
+npx pm2 save   # Ensures it survives server reboots
+```
+
+### 2. Nginx Reverse Proxy (Domain & SSL)
+To route traffic from `ghosted.yourdomain.com` to the bot's Node.js port (3000), drop this into `/etc/nginx/sites-available/ghosted`:
+```nginx
+server {
+    listen 80;
+    server_name ghosted.yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+Enable the site, restart Nginx, and run `sudo certbot --nginx -d ghosted.yourdomain.com` to establish HTTPS!
+
+---
+
 ## Commands
 
 | Command | Description |
