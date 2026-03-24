@@ -1,4 +1,5 @@
 # GHOSTED Bot
+*Built by Abhiram ([abhiramnj.com](https://abhiramnj.com))*
 
 Discord bot for provisioning GHOSTED cohorts from Google Sheets.
 
