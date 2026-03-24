@@ -92,7 +92,7 @@ async function parseSheet(sheetUrl) {
   const teams = {};
   for (const p of participants) {
     teams[p.team] ??= [];
-    teams[p.team].push({ name: p.name, discordId: p.discordId });
+    teams[p.team].push(p);
   }
 
   // Detect duplicate slugs (two differently-named teams that slug identically)
