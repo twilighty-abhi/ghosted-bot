@@ -67,7 +67,7 @@ async function provisionCohort(guild, cohortNum, participants, teams, emit, welc
     const cohortRole = await getOrCreateRole(guild, roleCohort(cohortNum), 0x57f287);
 
     const teamRoles = {};
-    for (const team of teams) {
+    for (const team of Object.keys(teams)) {
       emit('step', { message: `Creating role: ${roleTeam(team)}` });
       teamRoles[team] = await getOrCreateRole(guild, roleTeam(team), 0xfee75c);
     }
@@ -98,7 +98,7 @@ async function provisionCohort(guild, cohortNum, participants, teams, emit, welc
     });
 
     // 5. Team channels
-    for (const team of teams) {
+    for (const team of Object.keys(teams)) {
       emit('step', { message: `Creating #ghosted-team-${team}` });
       await guild.channels.create({
         name: `ghosted-team-${team}`, type: ChannelType.GuildText, parent: category.id,
