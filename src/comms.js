@@ -15,9 +15,11 @@ async function broadcastAnnouncement(guild, cohortNumber, messageText) {
 
 async function sendTeamDM(guild, cohortNumber, teamSlug, messageText) {
   const { roleTeam } = require('./provision');
+  // Defensively strip leading 'Ghosted-' if user entered the full role name instead of just the slug
+  const cleanSlug = teamSlug.replace(/^[Gg]hosted-/i, '');
   await guild.members.fetch();
   const cR = guild.roles.cache.find(r => r.name === `Ghosted-cohort-${cohortNumber}`);
-  const tR = guild.roles.cache.find(r => r.name === roleTeam(teamSlug));
+  const tR = guild.roles.cache.find(r => r.name === roleTeam(cleanSlug));
 
   if (!cR) throw new Error(`Cohort role not found.`);
   if (!tR) throw new Error(`Team role not found.`);
