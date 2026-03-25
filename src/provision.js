@@ -385,7 +385,7 @@ async function bulkRemoveCohort(guild, cohortNumber, emit) {
     const rolesToRemove = member.roles.cache.filter(r => 
       r.name === 'Ghosted-general' || 
       r.name === roleCohort(cohortNumber) || 
-      r.name.startsWith('Ghosted-team-')
+      (r.name.startsWith('Ghosted-') && r.name !== 'Ghosted-general' && !r.name.startsWith('Ghosted-cohort-') && r.name.toLowerCase() !== 'ghosted-organizers')
     );
 
     if (rolesToRemove.size > 0) {

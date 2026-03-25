@@ -94,7 +94,7 @@ function setupScheduledArchive(discord) {
       
       try {
         console.log(`[AutoArchive] Auto-archiving Cohort-${cohort.cohort_number} (scheduled)`);
-        await archiveCohort(guild, cohort.cohort_number, () => {}); // silent emit
+        await archiveCohort(guild, cohort.cohort_number, (_type, _payload) => {}); // silent emit
         
         // Update DB
         db.prepare("UPDATE cohorts SET status = 'archived' WHERE cohort_number = ? AND guild_id = ?").run(cohort.cohort_number, cohort.guild_id);

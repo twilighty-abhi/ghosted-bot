@@ -85,7 +85,7 @@ function makeEmit(write, extraTypes = {}) {
     else if (type === 'member_fail')      write('log', { level: 'fail', text: `  ✗ ${payload.name} — not in server` });
     else if (type === 'member_skip')      write('log', { level: 'skip', text: `  ⚠ ${payload.name} — skipped (${payload.reason})` });
     else if (type === 'member_sync_skip') write('log', { level: 'ok',   text: `  ✓ ${payload.name} — already set up` });
-    else if (type === 'done')        write('log', { level: 'done', text: `✅ Done — ${payload.assigned} assigned, ${payload.skipped.length} skipped` });
+    else if (type === 'done')        write('log', { level: 'done', text: `✅ Done — ${Array.isArray(payload.assigned) ? payload.assigned.length : payload.assigned} assigned, ${Array.isArray(payload.skipped) ? payload.skipped.length : payload.skipped} skipped` });
     else if (type === 'sync_done')   write('log', { level: 'done', text: `✅ Sync done — ${payload.newlyAssigned} new, ${payload.alreadyDone} already set, ${payload.skipped} skipped, ${payload.notFound} not found` });
     else if (type === 'arch_done')   write('log', { level: 'done', text: `✅ Archived — ${payload.channelCount} channels locked as "${payload.archivedName}"` });
     else if (type === 'error')       write('error', { message: payload.message });
