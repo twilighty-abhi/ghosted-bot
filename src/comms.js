@@ -1,7 +1,7 @@
 const { ChannelType } = require('discord.js');
-const { categoryName, roleTeam } = require('./provision');
 
 async function broadcastAnnouncement(guild, cohortNumber, messageText) {
+  const { categoryName } = require('./provision');
   const catName = categoryName(cohortNumber);
   const category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name === catName || c.name === `archived-ghosted-cohort-${cohortNumber}`));
   if (!category) throw new Error(`Category for Cohort-${cohortNumber} not found.`);
@@ -14,6 +14,7 @@ async function broadcastAnnouncement(guild, cohortNumber, messageText) {
 }
 
 async function sendTeamDM(guild, cohortNumber, teamSlug, messageText) {
+  const { roleTeam } = require('./provision');
   await guild.members.fetch();
   const cR = guild.roles.cache.find(r => r.name === `Ghosted-cohort-${cohortNumber}`);
   const tR = guild.roles.cache.find(r => r.name === roleTeam(teamSlug));
