@@ -153,7 +153,7 @@ app.post('/api/provision', async (req, res) => {
   catch (err) { write('error', { message: err.message }); activeProvisions.delete(guardKey); return res.end(); }
 
   if (data.warnings.length) data.warnings.forEach(w => write('log', { level: 'warn', text: w }));
-  try { await provisionCohort(guild, cohortNumber, data.participants, emit, welcomeMessage); }
+  try { await provisionCohort(guild, cohortNumber, data.participants, data.teams, emit, welcomeMessage); }
   catch (err) { write('error', { message: err.message }); }
   finally { activeProvisions.delete(guardKey); }
   write('all_done', {}); res.end();

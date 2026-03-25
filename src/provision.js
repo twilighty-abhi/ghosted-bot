@@ -22,7 +22,7 @@ async function getOrCreateRole(guild, name, color, hoist = false) {
 // Provision: full cohort setup
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function provisionCohort(guild, cohortNum, participants, teams, emit) {
+async function provisionCohort(guild, cohortNum, participants, teams, emit, welcomeMessage) {
   emit('step', { message: 'Fetching server member list…' });
   await guild.members.fetch();
 
