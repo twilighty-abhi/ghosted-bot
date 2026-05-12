@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.8.0",
+    "better-sqlite3": "^12.10.0",
     "cookie-parser": "^1.4.7",
     "discord.js": "^14.15.3",
     "dotenv": "^17.3.1",
